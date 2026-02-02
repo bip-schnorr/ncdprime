@@ -3,4 +3,10 @@ name = "ncdprime-py"
 version = "0.1.0"
 edition = "2024"
 
+[lib]
+name = "ncdprime"
+crate-type = ["cdylib"]
+
 [dependencies]
+pyo3 = { version = "0.23", features = ["extension-module"] }
+ncdprime-core = { path = "../ncdprime-core" }

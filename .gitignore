@@ -10,6 +10,10 @@ dist/
 Cargo.lock
 !rust/Cargo.lock
 
+# Native artifacts
+npm/
+*.node
+
 # Python
 __pycache__/
 *.pyc

@@ -3,4 +3,10 @@ name = "ncdprime-node"
 version = "0.1.0"
 edition = "2024"
 
+[lib]
+crate-type = ["cdylib"]
+
 [dependencies]
+napi = { version = "2", features = ["napi4"] }
+napi-derive = "2"
+ncdprime-core = { path = "../ncdprime-core" }

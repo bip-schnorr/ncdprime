@@ -1,14 +1,10 @@
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
-}
+use napi::bindgen_prelude::*;
+use napi_derive::napi;
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
+#[napi]
+pub fn ncd(x: Buffer, y: Buffer, gzip_level: Option<u32>) -> Result<f64> {
+    let c = ncdprime_core::Gzip::new(gzip_level.unwrap_or(6));
+    let d = ncdprime_core::ncd(&c, &x, &y, ncdprime_core::NcdOptions::default())
+        .map_err(|e| Error::from_reason(format!("ncd failed: {e}")))?;
+    Ok(d)
 }
