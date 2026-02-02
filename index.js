@@ -7,13 +7,19 @@ const require = createRequire(import.meta.url)
 
 let binding
 try {
-  binding = require('./npm/linux-x64-gnu/ncdprime.node')
+  // Preferred (napi build --output-dir npm)
+  binding = require('./npm/index.node')
 } catch {
   try {
-    binding = require('./npm/linux-x64/ncdprime.node')
+    // Older/manual layouts
+    binding = require('./npm/linux-x64-gnu/ncdprime.node')
   } catch {
-    // Native binding not built/available.
-    binding = null
+    try {
+      binding = require('./npm/linux-x64/ncdprime.node')
+    } catch {
+      // Native binding not built/available.
+      binding = null
+    }
   }
 }
 
