@@ -33,31 +33,17 @@ pub trait Compressor {
     fn compressed_len(&self, input: &[u8]) -> io::Result<usize>;
 }
 
-/// A deterministic gzip compressor (mtime fixed to 0).
+/// A deterministic gzip compressor.
 ///
-/// We implement gzip via flate2's GzEncoder and set the filename/mtime fields deterministically.
+/// We implement gzip via flate2's GzEncoder and set the header fields deterministically.
 pub struct Gzip {
     level: flate2::Compression,
-    /// gzip header mtime field
-    mtime: u32,
 }
 
 impl Gzip {
-    /// Create a deterministic gzip compressor (mtime=0).
     pub fn new(level: u32) -> Self {
         Self {
             level: flate2::Compression::new(level),
-            mtime: 0,
-        }
-    }
-
-    /// Create a gzip compressor with an explicit mtime.
-    ///
-    /// Use `mtime=0` for deterministic output.
-    pub fn with_mtime(level: u32, mtime: u32) -> Self {
-        Self {
-            level: flate2::Compression::new(level),
-            mtime,
         }
     }
 }
@@ -70,9 +56,7 @@ impl Compressor for Gzip {
     fn compressed_len(&self, input: &[u8]) -> io::Result<usize> {
         use flate2::GzBuilder;
 
-        let mut enc = GzBuilder::new()
-            .mtime(self.mtime)
-            .write(Vec::new(), self.level);
+        let mut enc = GzBuilder::new().mtime(0).write(Vec::new(), self.level);
         enc.write_all(input)?;
         let out = enc.finish()?;
         Ok(out.len())
