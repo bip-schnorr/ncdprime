@@ -28,7 +28,7 @@ Request JSON:
 {
   "a_b64": "...",
   "b_b64": "...",
-  "gzip_level": 6
+  "gzip_level": 9
 }
 ```
 
@@ -46,7 +46,7 @@ Request JSON:
 {
   "a": ["...base64...", "..."],
   "b": ["...base64..."],
-  "gzip_level": 6
+  "gzip_level": 9
 }
 ```
 

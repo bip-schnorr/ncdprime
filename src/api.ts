@@ -13,7 +13,7 @@ export type NcdApiOptions = {
  * Library API: compute NCD, preferring the native backend when available.
  */
 export function ncdAuto(x: Bytes, y: Bytes, opts: NcdApiOptions = {}): number {
-  const gzipLevel = opts.gzipLevel ?? 6;
+  const gzipLevel = opts.gzipLevel ?? 9;
 
   const native = tryLoadNative();
   if (native) return native.ncd(x, y, gzipLevel);
@@ -34,7 +34,7 @@ export async function matrixAuto(
   b: Bytes[],
   opts: MatrixOptions = {},
 ): Promise<number[][]> {
-  const gzipLevel = opts.gzipLevel ?? 6;
+  const gzipLevel = opts.gzipLevel ?? 9;
 
   const native = tryLoadNative();
   if (native) return native.matrix(a, b, gzipLevel);

@@ -3,7 +3,7 @@ use napi_derive::napi;
 
 #[napi]
 pub fn ncd(x: Buffer, y: Buffer, gzip_level: Option<u32>) -> Result<f64> {
-    let c = ncdprime_core::Gzip::new(gzip_level.unwrap_or(6));
+    let c = ncdprime_core::Gzip::new(gzip_level.unwrap_or(9));
     let d = ncdprime_core::ncd(&c, &x, &y, ncdprime_core::NcdOptions::default())
         .map_err(|e| Error::from_reason(format!("ncd failed: {e}")))?;
     Ok(d)
@@ -11,7 +11,7 @@ pub fn ncd(x: Buffer, y: Buffer, gzip_level: Option<u32>) -> Result<f64> {
 
 #[napi]
 pub fn matrix(a: Vec<Buffer>, b: Vec<Buffer>, gzip_level: Option<u32>) -> Result<Vec<Vec<f64>>> {
-    let c = ncdprime_core::Gzip::new(gzip_level.unwrap_or(6));
+    let c = ncdprime_core::Gzip::new(gzip_level.unwrap_or(9));
 
     let a_vecs: Vec<Vec<u8>> = a.into_iter().map(|buf| buf.to_vec()).collect();
     let b_vecs: Vec<Vec<u8>> = b.into_iter().map(|buf| buf.to_vec()).collect();

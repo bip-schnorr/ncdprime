@@ -17,7 +17,7 @@ program
   .argument("<fileA>")
   .argument("<fileB>")
   .option("--compressor <id>", "Compressor id (currently only: gzip)", "gzip")
-  .option("--gzip-level <n>", "gzip level (0-9)", (v) => Number.parseInt(v, 10), 6)
+  .option("--gzip-level <n>", "gzip level (0-9)", (v) => Number.parseInt(v, 10), 9)
   .action(async (fileA, fileB, opts) => {
     if (opts.compressor !== "gzip") {
       console.error(`Unsupported compressor: ${opts.compressor}`);
@@ -50,7 +50,7 @@ program
   .option("--no-labels", "Omit row/column labels")
   .option("--format <fmt>", "Output format (tsv|csv)", "tsv")
   .option("--compressor <id>", "Compressor id (currently only: gzip)", "gzip")
-  .option("--gzip-level <n>", "gzip level (0-9)", (v) => Number.parseInt(v, 10), 6)
+  .option("--gzip-level <n>", "gzip level (0-9)", (v) => Number.parseInt(v, 10), 9)
   .action(async (setA, setB, opts) => {
     const { autoDetectSetSpec, loadSet } = await import("./inputs.js");
     const { computeMatrix, formatMatrix } = await import("./matrix.js");

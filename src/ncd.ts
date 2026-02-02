@@ -10,7 +10,7 @@ export interface Compressor {
   compress(input: Bytes): Bytes;
 }
 
-export const gzipCompressor = (level = 6): Compressor => ({
+export const gzipCompressor = (level = 9): Compressor => ({
   id: "gzip",
   name: `gzip (zlib, level=${level})`,
   compress(input) {

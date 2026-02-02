@@ -15,12 +15,13 @@ Build the TypeScript CLI and run:
 
 ```bash
 npm run build
-node dist/cli.js pair <fileA> <fileB> --gzip-level 6
+node dist/cli.js pair <fileA> <fileB> --gzip-level 9
 node dist/cli.js matrix <setA> [setB] --format tsv
 ```
 
 Notes:
 - gzip output is deterministic by default (fixed gzip header fields)
+- default gzip level is 9
 - the CLI will use the native Rust backend when available, otherwise it falls back to a pure-JS implementation
 
 ## Library
@@ -32,8 +33,8 @@ import { ncdAuto, matrixAuto } from "ncdprime";
 
 const enc = (s) => new TextEncoder().encode(s);
 
-console.log(ncdAuto(enc("aaaa"), enc("aaaa"), { gzipLevel: 6 }));
-console.log(await matrixAuto([enc("aaa"), enc("bbb")], [enc("aaa")], { gzipLevel: 6 }));
+console.log(ncdAuto(enc("aaaa"), enc("aaaa"), { gzipLevel: 9 }));
+console.log(await matrixAuto([enc("aaa"), enc("bbb")], [enc("aaa")], { gzipLevel: 9 }));
 ```
 
 ## Native backend (optional)

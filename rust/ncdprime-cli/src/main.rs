@@ -18,7 +18,7 @@ enum Commands {
     Pair {
         file_a: String,
         file_b: String,
-        #[arg(long, default_value_t = 6)]
+        #[arg(long, default_value_t = 9)]
         gzip_level: u32,
     },
 
@@ -37,7 +37,7 @@ enum Commands {
         /// Omit row/column labels
         #[arg(long = "no-labels", default_value_t = false)]
         no_labels: bool,
-        #[arg(long, default_value_t = 6)]
+        #[arg(long, default_value_t = 9)]
         gzip_level: u32,
     },
 }

@@ -25,7 +25,7 @@ struct PairRequest {
 }
 
 fn default_gzip_level() -> u32 {
-    6
+    9
 }
 
 #[derive(Debug, Serialize)]
