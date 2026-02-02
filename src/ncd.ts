@@ -46,12 +46,23 @@ export const compressedSize = (c: Compressor, x: Bytes): number => c.compress(x)
  * Normalized Compression Distance:
  *   NCD(x,y) = (C(xy) - min(C(x), C(y))) / max(C(x), C(y))
  */
-export function ncd(c: Compressor, x: Bytes, y: Bytes): number {
+export type NcdOptions = {
+  /** gzip level (0-9); only used by native backend selection helper functions */
+  gzipLevel?: number;
+  /** gzip mtime; 0 is deterministic; nonzero requires native backend */
+  gzipMtime?: number;
+};
+
+export function ncdFromSizes(
+  c: Compressor,
+  x: Bytes,
+  y: Bytes,
+  cx: number,
+  cy: number,
+): number {
   // Match the Rust core defaults:
   // - join=frame64
   // - symmetry=min(C(xy), C(yx))
-  const cx = compressedSize(c, x);
-  const cy = compressedSize(c, y);
   const min = Math.min(cx, cy);
   const max = Math.max(cx, cy);
   if (max === 0) return 0;
@@ -63,4 +74,10 @@ export function ncd(c: Compressor, x: Bytes, y: Bytes): number {
   const d = (ccat - min) / max;
   if (Number.isNaN(d)) return 0;
   return d;
+}
+
+export function ncd(c: Compressor, x: Bytes, y: Bytes): number {
+  const cx = compressedSize(c, x);
+  const cy = compressedSize(c, y);
+  return ncdFromSizes(c, x, y, cx, cy);
 }

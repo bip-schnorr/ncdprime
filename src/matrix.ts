@@ -1,5 +1,5 @@
 import type { Compressor } from "./ncd.js";
-import { ncd } from "./ncd.js";
+import { ncdFromSizes } from "./ncd.js";
 import type { InputSet } from "./inputs.js";
 
 export type Matrix = {
@@ -36,16 +36,7 @@ export async function computeMatrix(c: Compressor, a: InputSet, b: InputSet): Pr
   for (let i = 0; i < a.items.length; i++) {
     const row: number[] = [];
     for (let j = 0; j < b.items.length; j++) {
-      // We still call ncd() for the per-pair terms; it will recompute C(x)/C(y).
-      // That's acceptable for the JS fallback, but we keep the singleton cache
-      // ready in case we later expose an ncd_from_sizes equivalent here.
-      //
-      // For now, use scalar ncd (which is now symmetric + frame64 join).
-      row.push(ncd(c, a.items[i].bytes, b.items[j].bytes));
-
-      // (Optional future optimization: implement an ncdFromSizes in JS and reuse aSizes/bSizes.)
-      void aSizes[i];
-      void bSizes[j];
+      row.push(ncdFromSizes(c, a.items[i].bytes, b.items[j].bytes, aSizes[i], bSizes[j]));
     }
     values.push(row);
   }

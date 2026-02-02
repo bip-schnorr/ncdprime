@@ -9,9 +9,15 @@ let binding
 try {
   binding = require('./npm/linux-x64-gnu/ncdprime.node')
 } catch {
-  binding = require('./npm/linux-x64/ncdprime.node')
+  try {
+    binding = require('./npm/linux-x64/ncdprime.node')
+  } catch {
+    // Native binding not built/available.
+    binding = null
+  }
 }
 
-export const ncd = binding.ncd
-export const matrix = binding.matrix
+export const ncd = binding?.ncd
+export const matrix = binding?.matrix
+
 export default binding
