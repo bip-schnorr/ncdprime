@@ -14,8 +14,7 @@ export const gzipCompressor = (level = 6): Compressor => ({
   id: "gzip",
   name: `gzip (zlib, level=${level})`,
   compress(input) {
-    // Deterministic gzip output requires fixed mtime.
-    // @types/node may not expose mtime on gzip options, but Node supports it.
+    // Deterministic gzip output (header mtime fixed to 0).
     return gzipSync(input, { level, mtime: 0 } as unknown as ZlibOptions);
   },
 });
@@ -46,13 +45,6 @@ export const compressedSize = (c: Compressor, x: Bytes): number => c.compress(x)
  * Normalized Compression Distance:
  *   NCD(x,y) = (C(xy) - min(C(x), C(y))) / max(C(x), C(y))
  */
-export type NcdOptions = {
-  /** gzip level (0-9); only used by native backend selection helper functions */
-  gzipLevel?: number;
-  /** gzip mtime; 0 is deterministic; nonzero requires native backend */
-  gzipMtime?: number;
-};
-
 export function ncdFromSizes(
   c: Compressor,
   x: Bytes,
