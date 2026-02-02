@@ -8,11 +8,47 @@ export type Matrix = {
   values: number[][]; // rows x cols
 };
 
-export function computeMatrix(c: Compressor, a: InputSet, b: InputSet): Matrix {
+const sha256 = async (bytes: Uint8Array): Promise<string> => {
+  // Used only for deduping singleton compression sizes in the pure-JS fallback.
+  const { createHash } = await import("node:crypto");
+  return createHash("sha256").update(bytes).digest("hex");
+};
+
+export async function computeMatrix(c: Compressor, a: InputSet, b: InputSet): Promise<Matrix> {
   const rows = a.items.map((i) => i.label);
   const cols = b.items.map((i) => i.label);
 
-  const values = a.items.map((ai) => b.items.map((bi) => ncd(c, ai.bytes, bi.bytes)));
+  // Cache C(x) by content hash to avoid recompressing duplicates.
+  const sizeCache = new Map<string, number>();
+  const getSize = async (bytes: Uint8Array): Promise<number> => {
+    const key = await sha256(bytes);
+    const hit = sizeCache.get(key);
+    if (hit != null) return hit;
+    const v = c.compress(bytes).byteLength;
+    sizeCache.set(key, v);
+    return v;
+  };
+
+  const aSizes = await Promise.all(a.items.map((i) => getSize(i.bytes)));
+  const bSizes = await Promise.all(b.items.map((i) => getSize(i.bytes)));
+
+  const values: number[][] = [];
+  for (let i = 0; i < a.items.length; i++) {
+    const row: number[] = [];
+    for (let j = 0; j < b.items.length; j++) {
+      // We still call ncd() for the per-pair terms; it will recompute C(x)/C(y).
+      // That's acceptable for the JS fallback, but we keep the singleton cache
+      // ready in case we later expose an ncd_from_sizes equivalent here.
+      //
+      // For now, use scalar ncd (which is now symmetric + frame64 join).
+      row.push(ncd(c, a.items[i].bytes, b.items[j].bytes));
+
+      // (Optional future optimization: implement an ncdFromSizes in JS and reuse aSizes/bSizes.)
+      void aSizes[i];
+      void bSizes[j];
+    }
+    values.push(row);
+  }
 
   return { rows, cols, values };
 }

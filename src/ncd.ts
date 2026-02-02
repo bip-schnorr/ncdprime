@@ -20,14 +20,23 @@ export const gzipCompressor = (level = 6): Compressor => ({
   },
 });
 
-export const concatWithSentinel = (a: Bytes, b: Bytes): Bytes => {
-  // NCD for files/strings relies on C(xy). For binary data, we include a sentinel
-  // that cannot be confused with stream concatenation in some compressors.
-  // 0x00 is fine for most practical compressors; we’ll make this configurable later.
-  const out = new Uint8Array(a.length + 1 + b.length);
-  out.set(a, 0);
-  out[a.length] = 0;
-  out.set(b, a.length + 1);
+export const frame64 = (b: Bytes): Bytes => {
+  // u64_le(len) || bytes
+  const out = new Uint8Array(8 + b.length);
+  const dv = new DataView(out.buffer, out.byteOffset, out.byteLength);
+  // lengths > 2^53 aren't representable in JS numbers precisely; for our typical inputs
+  // this is fine.
+  dv.setBigUint64(0, BigInt(b.length), true);
+  out.set(b, 8);
+  return out;
+};
+
+export const joinFrame64 = (a: Bytes, b: Bytes): Bytes => {
+  const fa = frame64(a);
+  const fb = frame64(b);
+  const out = new Uint8Array(fa.length + fb.length);
+  out.set(fa, 0);
+  out.set(fb, fa.length);
   return out;
 };
 
@@ -38,11 +47,20 @@ export const compressedSize = (c: Compressor, x: Bytes): number => c.compress(x)
  *   NCD(x,y) = (C(xy) - min(C(x), C(y))) / max(C(x), C(y))
  */
 export function ncd(c: Compressor, x: Bytes, y: Bytes): number {
+  // Match the Rust core defaults:
+  // - join=frame64
+  // - symmetry=min(C(xy), C(yx))
   const cx = compressedSize(c, x);
   const cy = compressedSize(c, y);
-  const cxy = compressedSize(c, concatWithSentinel(x, y));
   const min = Math.min(cx, cy);
   const max = Math.max(cx, cy);
   if (max === 0) return 0;
-  return (cxy - min) / max;
+
+  const cxy = compressedSize(c, joinFrame64(x, y));
+  const cyx = compressedSize(c, joinFrame64(y, x));
+  const ccat = Math.min(cxy, cyx);
+
+  const d = (ccat - min) / max;
+  if (Number.isNaN(d)) return 0;
+  return d;
 }

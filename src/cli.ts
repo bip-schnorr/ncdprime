@@ -108,7 +108,7 @@ program
     }
 
     const c = gzipCompressor(opts.gzipLevel);
-    const m = computeMatrix(c, a, b);
+    const m = await computeMatrix(c, a, b);
     process.stdout.write(formatMatrix(m, fmt, Boolean(opts.labels)));
   });
 
