@@ -1,0 +1,8 @@
+[workspace]
+resolver = "2"
+members = [
+  "ncdprime-core",
+  "ncdprime-cli",
+  "ncdprime-py",
+  "ncdprime-node",
+]
