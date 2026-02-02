@@ -1,13 +1,8 @@
 import { createRequire } from "node:module";
 
 export type NativeBinding = {
-  ncd: (x: Uint8Array, y: Uint8Array, gzipLevel?: number, gzipMtime?: number) => number;
-  matrix: (
-    a: Array<Uint8Array>,
-    b: Array<Uint8Array>,
-    gzipLevel?: number,
-    gzipMtime?: number,
-  ) => number[][];
+  ncd: (x: Uint8Array, y: Uint8Array, gzipLevel?: number) => number;
+  matrix: (a: Array<Uint8Array>, b: Array<Uint8Array>, gzipLevel?: number) => number[][];
 };
 
 /**

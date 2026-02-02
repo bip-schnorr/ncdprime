@@ -7,9 +7,9 @@ use pyo3::prelude::*;
 /// - join=frame64
 /// - symmetry=min(C(xy), C(yx))
 #[pyfunction]
-#[pyo3(signature = (x, y, gzip_level=None, gzip_mtime=None))]
-fn ncd(x: &[u8], y: &[u8], gzip_level: Option<u32>, gzip_mtime: Option<u32>) -> PyResult<f64> {
-    let c = Gzip::with_mtime(gzip_level.unwrap_or(6), gzip_mtime.unwrap_or(0));
+#[pyo3(signature = (x, y, gzip_level=None))]
+fn ncd(x: &[u8], y: &[u8], gzip_level: Option<u32>) -> PyResult<f64> {
+    let c = Gzip::new(gzip_level.unwrap_or(6));
     let d = ncdprime_core::ncd(&c, x, y, NcdOptions::default()).map_err(|e| {
         pyo3::exceptions::PyRuntimeError::new_err(format!("ncd failed: {e}"))
     })?;
@@ -20,14 +20,13 @@ fn ncd(x: &[u8], y: &[u8], gzip_level: Option<u32>, gzip_mtime: Option<u32>) -> 
 ///
 /// Returns a list-of-lists of floats (rows = a, cols = b).
 #[pyfunction]
-#[pyo3(signature = (a, b, gzip_level=None, gzip_mtime=None))]
+#[pyo3(signature = (a, b, gzip_level=None))]
 fn matrix(
     a: Vec<Vec<u8>>,
     b: Vec<Vec<u8>>,
     gzip_level: Option<u32>,
-    gzip_mtime: Option<u32>,
 ) -> PyResult<Vec<Vec<f64>>> {
-    let c = Gzip::with_mtime(gzip_level.unwrap_or(6), gzip_mtime.unwrap_or(0));
+    let c = Gzip::new(gzip_level.unwrap_or(6));
     let m = ncdprime_core::ncd_matrix(&c, &a, &b, NcdOptions::default()).map_err(|e| {
         pyo3::exceptions::PyRuntimeError::new_err(format!("matrix failed: {e}"))
     })?;

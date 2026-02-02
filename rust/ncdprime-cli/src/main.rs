@@ -20,9 +20,6 @@ enum Commands {
         file_b: String,
         #[arg(long, default_value_t = 6)]
         gzip_level: u32,
-        /// gzip header mtime (timestamp). Use 0 for deterministic output.
-        #[arg(long, default_value_t = 0)]
-        gzip_mtime: u32,
     },
 
     /// Compute an NCD matrix between two sets (dirs, files, list files, or literals).
@@ -42,8 +39,6 @@ enum Commands {
         no_labels: bool,
         #[arg(long, default_value_t = 6)]
         gzip_level: u32,
-        #[arg(long, default_value_t = 0)]
-        gzip_mtime: u32,
     },
 }
 
@@ -55,11 +50,10 @@ fn main() -> anyhow::Result<()> {
             file_a,
             file_b,
             gzip_level,
-            gzip_mtime,
         } => {
             let a = fs::read(file_a)?;
             let b = fs::read(file_b)?;
-            let c = ncdprime_core::Gzip::with_mtime(gzip_level, gzip_mtime);
+            let c = ncdprime_core::Gzip::new(gzip_level);
             let d = ncdprime_core::ncd(&c, &a, &b, ncdprime_core::NcdOptions::default())?;
             println!("{d}");
         }
@@ -72,7 +66,6 @@ fn main() -> anyhow::Result<()> {
             format,
             no_labels,
             gzip_level,
-            gzip_mtime,
         } => {
             let spec_a = inputs::auto_detect_set_spec(&set_a, list)?;
             let spec_b = if square {
@@ -84,7 +77,7 @@ fn main() -> anyhow::Result<()> {
             let a = inputs::load_set(&spec_a)?;
             let b = inputs::load_set(&spec_b)?;
 
-            let c = ncdprime_core::Gzip::with_mtime(gzip_level, gzip_mtime);
+            let c = ncdprime_core::Gzip::new(gzip_level);
 
             let a_bytes: Vec<Vec<u8>> = a.items.iter().map(|i| i.bytes.clone()).collect();
             let b_bytes: Vec<Vec<u8>> = b.items.iter().map(|i| i.bytes.clone()).collect();

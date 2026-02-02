@@ -7,7 +7,6 @@ import { tryLoadNative } from "./backend.js";
 
 export type NcdApiOptions = {
   gzipLevel?: number;
-  gzipMtime?: number;
 };
 
 /**
@@ -15,14 +14,9 @@ export type NcdApiOptions = {
  */
 export function ncdAuto(x: Bytes, y: Bytes, opts: NcdApiOptions = {}): number {
   const gzipLevel = opts.gzipLevel ?? 6;
-  const gzipMtime = opts.gzipMtime ?? 0;
 
   const native = tryLoadNative();
-  if (native) return native.ncd(x, y, gzipLevel, gzipMtime);
-
-  if (gzipMtime !== 0) {
-    throw new Error("Nonzero gzipMtime requires native backend");
-  }
+  if (native) return native.ncd(x, y, gzipLevel);
 
   const c = gzipCompressor(gzipLevel);
   return ncd(c, x, y);
@@ -30,7 +24,6 @@ export function ncdAuto(x: Bytes, y: Bytes, opts: NcdApiOptions = {}): number {
 
 export type MatrixOptions = {
   gzipLevel?: number;
-  gzipMtime?: number;
 };
 
 /**
@@ -42,14 +35,9 @@ export async function matrixAuto(
   opts: MatrixOptions = {},
 ): Promise<number[][]> {
   const gzipLevel = opts.gzipLevel ?? 6;
-  const gzipMtime = opts.gzipMtime ?? 0;
 
   const native = tryLoadNative();
-  if (native) return native.matrix(a, b, gzipLevel, gzipMtime);
-
-  if (gzipMtime !== 0) {
-    throw new Error("Nonzero gzipMtime requires native backend");
-  }
+  if (native) return native.matrix(a, b, gzipLevel);
 
   // Pure JS fallback with singleton-size caching + ncdFromSizes.
   const c = gzipCompressor(gzipLevel);
