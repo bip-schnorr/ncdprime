@@ -25,6 +25,8 @@ Notes:
 
 ## Library
 
+Default import is pure-JS (and will automatically use native if available):
+
 ```js
 import { ncdAuto, matrixAuto } from "ncdprime";
 
@@ -43,3 +45,11 @@ npm run build:native
 ```
 
 Then the CLI and `ncdAuto`/`matrixAuto` will prefer it automatically.
+
+If you want to import the native bindings directly (and accept that it may not exist unless built), use:
+
+```js
+import * as native from "ncdprime/native";
+// native.ncd(...)
+// native.matrix(...)
+```
