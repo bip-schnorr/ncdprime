@@ -6,7 +6,9 @@ dist/
 # Rust
 **/target/
 **/*.rs.bk
+# Keep the workspace lockfile (rust/Cargo.lock) committed for reproducible CLI builds.
 Cargo.lock
+!rust/Cargo.lock
 
 # Python
 __pycache__/
