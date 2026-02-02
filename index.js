@@ -1,14 +1,17 @@
-// JS wrapper for the native N-API module.
-// After `napi build`, the binary will be placed under `npm/` directories.
-// For now we load from the build output when present.
+// ESM entrypoint for the native N-API module.
+// Works when package.json has `type: "module"`.
 
-let binding;
+import { createRequire } from 'node:module'
+
+const require = createRequire(import.meta.url)
+
+let binding
 try {
-  // napi-rs layout when using `napi build`.
-  binding = require('./npm/linux-x64-gnu/ncdprime.node');
+  binding = require('./npm/linux-x64-gnu/ncdprime.node')
 } catch {
-  // Fallback for dev setups; user can adjust.
-  binding = require('./npm/linux-x64/ncdprime.node');
+  binding = require('./npm/linux-x64/ncdprime.node')
 }
 
-module.exports = binding;
+export const ncd = binding.ncd
+export const matrix = binding.matrix
+export default binding

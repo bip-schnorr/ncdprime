@@ -2,11 +2,23 @@
   "name": "ncdprime",
   "version": "0.1.0",
   "private": true,
-  "type": "commonjs",
+  "type": "module",
   "main": "index.js",
   "types": "index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js",
+      "require": "./index.cjs"
+    }
+  },
+  "bin": {
+    "ncdprime": "./dist/cli.js"
+  },
   "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run",
     "build:native": "napi build --manifest-path rust/ncdprime-node/Cargo.toml --release",
-    "test:native": "node -e \"const m=require('./index.js'); console.log(m.ncd(Buffer.from('aaaa'), Buffer.from('aaaa')));\""
+    "test:native": "node -e \"import('./index.js').then(m=>console.log(m.ncd(Buffer.from('aaaa'), Buffer.from('aaaa'),6,0)))\""
   }
 }
