@@ -104,7 +104,17 @@ impl Default for NcdOptions {
 pub fn ncd<C: Compressor>(c: &C, x: &[u8], y: &[u8], opts: NcdOptions) -> io::Result<f64> {
     let cx = c.compressed_len(x)? as f64;
     let cy = c.compressed_len(y)? as f64;
+    ncd_from_sizes(c, x, y, cx, cy, opts)
+}
 
+fn ncd_from_sizes<C: Compressor>(
+    c: &C,
+    x: &[u8],
+    y: &[u8],
+    cx: f64,
+    cy: f64,
+    opts: NcdOptions,
+) -> io::Result<f64> {
     let min = cx.min(cy);
     let max = cx.max(cy);
 
@@ -136,6 +146,36 @@ pub fn ncd<C: Compressor>(c: &C, x: &[u8], y: &[u8], opts: NcdOptions) -> io::Re
     }
 
     Ok(d)
+}
+
+/// Compute an NCD matrix between two sets of byte buffers.
+///
+/// This function caches C(x) / C(y) so computing a matrix isn't O((n*m) * compress(x)).
+pub fn ncd_matrix<C: Compressor>(
+    c: &C,
+    a: &[Vec<u8>],
+    b: &[Vec<u8>],
+    opts: NcdOptions,
+) -> io::Result<Vec<Vec<f64>>> {
+    let a_sizes: Vec<f64> = a
+        .iter()
+        .map(|x| Ok(c.compressed_len(x)? as f64))
+        .collect::<io::Result<_>>()?;
+
+    let b_sizes: Vec<f64> = b
+        .iter()
+        .map(|y| Ok(c.compressed_len(y)? as f64))
+        .collect::<io::Result<_>>()?;
+
+    let mut out = vec![vec![0.0; b.len()]; a.len()];
+
+    for (i, x) in a.iter().enumerate() {
+        for (j, y) in b.iter().enumerate() {
+            out[i][j] = ncd_from_sizes(c, x, y, a_sizes[i], b_sizes[j], opts)?;
+        }
+    }
+
+    Ok(out)
 }
 
 pub fn read_all<R: Read>(mut r: R) -> io::Result<Vec<u8>> {

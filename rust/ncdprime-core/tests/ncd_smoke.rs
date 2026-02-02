@@ -1,4 +1,4 @@
-use ncdprime_core::{ncd, Gzip, NcdOptions};
+use ncdprime_core::{ncd, ncd_matrix, Gzip, NcdOptions};
 
 #[test]
 fn identity_is_smallish() {
@@ -8,4 +8,21 @@ fn identity_is_smallish() {
     // With real compressors and framing overhead, this is only "close" to 0.
     assert!(d >= 0.0);
     assert!(d < 0.6);
+}
+
+#[test]
+fn matrix_matches_scalar() {
+    let c = Gzip::new(6);
+    let a = vec![b"aaa".to_vec(), b"bbb".to_vec()];
+    let b = vec![b"aaa".to_vec()];
+
+    let m = ncd_matrix(&c, &a, &b, NcdOptions::default()).unwrap();
+    assert_eq!(m.len(), 2);
+    assert_eq!(m[0].len(), 1);
+
+    let d0 = ncd(&c, &a[0], &b[0], NcdOptions::default()).unwrap();
+    let d1 = ncd(&c, &a[1], &b[0], NcdOptions::default()).unwrap();
+
+    assert!((m[0][0] - d0).abs() < 1e-12);
+    assert!((m[1][0] - d1).abs() < 1e-12);
 }
