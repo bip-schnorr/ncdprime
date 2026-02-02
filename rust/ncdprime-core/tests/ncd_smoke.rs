@@ -13,16 +13,20 @@ fn identity_is_smallish() {
 #[test]
 fn matrix_matches_scalar() {
     let c = Gzip::new(6);
-    let a = vec![b"aaa".to_vec(), b"bbb".to_vec()];
-    let b = vec![b"aaa".to_vec()];
+    // includes duplicates to exercise the singleton-size cache
+    let a = vec![b"aaa".to_vec(), b"bbb".to_vec(), b"aaa".to_vec()];
+    let b = vec![b"aaa".to_vec(), b"aaa".to_vec()];
 
     let m = ncd_matrix(&c, &a, &b, NcdOptions::default()).unwrap();
-    assert_eq!(m.len(), 2);
-    assert_eq!(m[0].len(), 1);
+    assert_eq!(m.len(), 3);
+    assert_eq!(m[0].len(), 2);
 
-    let d0 = ncd(&c, &a[0], &b[0], NcdOptions::default()).unwrap();
-    let d1 = ncd(&c, &a[1], &b[0], NcdOptions::default()).unwrap();
+    // spot-check a few cells against scalar ncd()
+    let d00 = ncd(&c, &a[0], &b[0], NcdOptions::default()).unwrap();
+    let d10 = ncd(&c, &a[1], &b[0], NcdOptions::default()).unwrap();
+    let d22 = ncd(&c, &a[2], &b[1], NcdOptions::default()).unwrap();
 
-    assert!((m[0][0] - d0).abs() < 1e-12);
-    assert!((m[1][0] - d1).abs() < 1e-12);
+    assert!((m[0][0] - d00).abs() < 1e-12);
+    assert!((m[1][0] - d10).abs() < 1e-12);
+    assert!((m[2][1] - d22).abs() < 1e-12);
 }

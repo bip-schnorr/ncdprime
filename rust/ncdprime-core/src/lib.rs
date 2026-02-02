@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::io::{self, Read, Write};
 
 #[derive(Clone, Copy, Debug)]
@@ -157,15 +158,37 @@ pub fn ncd_matrix<C: Compressor>(
     b: &[Vec<u8>],
     opts: NcdOptions,
 ) -> io::Result<Vec<Vec<f64>>> {
-    let a_sizes: Vec<f64> = a
-        .iter()
-        .map(|x| Ok(c.compressed_len(x)? as f64))
-        .collect::<io::Result<_>>()?;
+    // Deduplicate singleton compression sizes using a content hash.
+    // This helps when the same bytes appear multiple times in `a` and/or `b`.
+    let mut size_cache: HashMap<[u8; 32], f64> = HashMap::new();
 
-    let b_sizes: Vec<f64> = b
-        .iter()
-        .map(|y| Ok(c.compressed_len(y)? as f64))
-        .collect::<io::Result<_>>()?;
+    let mut a_sizes: Vec<f64> = Vec::with_capacity(a.len());
+    for x in a {
+        let key: [u8; 32] = *blake3::hash(x).as_bytes();
+        let cx = match size_cache.get(&key) {
+            Some(v) => *v,
+            None => {
+                let v = c.compressed_len(x)? as f64;
+                size_cache.insert(key, v);
+                v
+            }
+        };
+        a_sizes.push(cx);
+    }
+
+    let mut b_sizes: Vec<f64> = Vec::with_capacity(b.len());
+    for y in b {
+        let key: [u8; 32] = *blake3::hash(y).as_bytes();
+        let cy = match size_cache.get(&key) {
+            Some(v) => *v,
+            None => {
+                let v = c.compressed_len(y)? as f64;
+                size_cache.insert(key, v);
+                v
+            }
+        };
+        b_sizes.push(cy);
+    }
 
     let mut out = vec![vec![0.0; b.len()]; a.len()];
 
