@@ -4,5 +4,5 @@ members = [
   "ncdprime-core",
   "ncdprime-cli",
   "ncdprime-py",
-  "ncdprime-node",
+  "ncdprime-node", "ncdprime-server",
 ]

@@ -1,6 +1,6 @@
 use std::sync::atomic::{AtomicUsize, Ordering};
 
-use ncdprime_core::{ncd_matrix, Compressor, NcdOptions, Symmetry};
+use ncdprime_core::{Compressor, NcdOptions, Symmetry, ncd_matrix};
 
 #[derive(Default)]
 struct CountingCompressor {

@@ -1,4 +1,4 @@
-use ncdprime_core::{ncd, ncd_matrix, Gzip, NcdOptions};
+use ncdprime_core::{Gzip, NcdOptions, ncd, ncd_matrix};
 
 #[test]
 fn identity_is_smallish() {

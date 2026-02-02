@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Context, Result};
+use anyhow::{Context, Result, anyhow};
 use std::fs;
 use std::path::{Path, PathBuf};
 
@@ -33,10 +33,14 @@ pub fn auto_detect_set_spec(arg: &str, list: bool) -> Result<SetSpec> {
     let p = Path::new(arg);
     if let Ok(md) = fs::metadata(p) {
         if md.is_dir() {
-            return Ok(SetSpec::Dir { path: p.to_path_buf() });
+            return Ok(SetSpec::Dir {
+                path: p.to_path_buf(),
+            });
         }
         if md.is_file() {
-            return Ok(SetSpec::File { path: p.to_path_buf() });
+            return Ok(SetSpec::File {
+                path: p.to_path_buf(),
+            });
         }
     }
 

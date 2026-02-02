@@ -10,11 +10,7 @@ pub fn ncd(x: Buffer, y: Buffer, gzip_level: Option<u32>) -> Result<f64> {
 }
 
 #[napi]
-pub fn matrix(
-    a: Vec<Buffer>,
-    b: Vec<Buffer>,
-    gzip_level: Option<u32>,
-) -> Result<Vec<Vec<f64>>> {
+pub fn matrix(a: Vec<Buffer>, b: Vec<Buffer>, gzip_level: Option<u32>) -> Result<Vec<Vec<f64>>> {
     let c = ncdprime_core::Gzip::new(gzip_level.unwrap_or(6));
 
     let a_vecs: Vec<Vec<u8>> = a.into_iter().map(|buf| buf.to_vec()).collect();

@@ -82,9 +82,20 @@ fn main() -> anyhow::Result<()> {
             let a_bytes: Vec<Vec<u8>> = a.items.iter().map(|i| i.bytes.clone()).collect();
             let b_bytes: Vec<Vec<u8>> = b.items.iter().map(|i| i.bytes.clone()).collect();
 
-            let values = ncdprime_core::ncd_matrix(&c, &a_bytes, &b_bytes, ncdprime_core::NcdOptions::default())?;
+            let values = ncdprime_core::ncd_matrix(
+                &c,
+                &a_bytes,
+                &b_bytes,
+                ncdprime_core::NcdOptions::default(),
+            )?;
             let (rows, cols) = matrix::rows_cols(&a, &b);
-            let out = matrix::format_matrix(&rows, &cols, &values, if format == "csv" { "csv" } else { "tsv" }, !no_labels);
+            let out = matrix::format_matrix(
+                &rows,
+                &cols,
+                &values,
+                if format == "csv" { "csv" } else { "tsv" },
+                !no_labels,
+            );
             print!("{out}");
         }
     }
