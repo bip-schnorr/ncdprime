@@ -162,8 +162,12 @@ fn main() -> anyhow::Result<()> {
                     });
                     bytes_seen += p.input_bytes as u128;
 
-                    if est.should_refit() {
-                        est.refit_first_n(est.sample_count());
+                    // Refit early (first ~6 samples) and again around ~15 samples.
+                    // Keeping refits sparse avoids overfitting and keeps ETA stable.
+                    match est.sample_count() {
+                        6 => est.refit_first_n(6),
+                        15 | 16 => est.refit_first_n(15),
+                        _ => {}
                     }
 
                     // Emit occasional progress updates to stderr (so matrix output stays clean).
