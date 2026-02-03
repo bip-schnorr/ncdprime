@@ -1,3 +1,7 @@
+mod factory;
+
+pub use factory::{parse_compressor, CompressorSpec};
+
 use std::collections::HashMap;
 use std::io::{self, Read, Write};
 
@@ -48,6 +52,115 @@ impl Gzip {
     }
 }
 
+/// Zstandard compressor.
+pub struct Zstd {
+    level: i32,
+}
+
+impl Zstd {
+    pub fn new(level: i32) -> Self {
+        Self { level }
+    }
+}
+
+impl Compressor for Zstd {
+    fn id(&self) -> &'static str {
+        "zstd"
+    }
+
+    fn compressed_len(&self, input: &[u8]) -> io::Result<usize> {
+        zstd::stream::encode_all(input, self.level)
+            .map(|v| v.len())
+            .map_err(|e| io::Error::new(io::ErrorKind::Other, e))
+    }
+}
+
+/// Brotli compressor.
+pub struct Brotli {
+    quality: u32,
+    /// window size as a power of two (10..=24)
+    lgwin: u32,
+}
+
+impl Brotli {
+    pub fn new(quality: u32, lgwin: u32) -> Self {
+        Self { quality, lgwin }
+    }
+}
+
+impl Compressor for Brotli {
+    fn id(&self) -> &'static str {
+        "brotli"
+    }
+
+    fn compressed_len(&self, input: &[u8]) -> io::Result<usize> {
+        use brotli::enc::BrotliEncoderParams;
+
+        let mut out = Vec::new();
+        let params = BrotliEncoderParams {
+            quality: self.quality as i32,
+            lgwin: self.lgwin as i32,
+            ..Default::default()
+        };
+
+        brotli::BrotliCompress(&mut &input[..], &mut out, &params)
+            .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("brotli: {e:?}")))?;
+
+        Ok(out.len())
+    }
+}
+
+/// LZ4 (block) compressor.
+pub struct Lz4 {
+    /// acceleration factor: 1 = best compression, higher = faster
+    accel: i32,
+}
+
+impl Lz4 {
+    pub fn new(accel: i32) -> Self {
+        Self { accel }
+    }
+}
+
+impl Compressor for Lz4 {
+    fn id(&self) -> &'static str {
+        "lz4"
+    }
+
+    fn compressed_len(&self, input: &[u8]) -> io::Result<usize> {
+        // lz4_flex doesn't expose acceleration; it uses a fast algorithm.
+        // We'll treat this as a placeholder for "lz4" and keep determinism.
+        let _ = self.accel;
+        Ok(lz4_flex::compress_prepend_size(input).len())
+    }
+}
+
+/// XZ (LZMA2) compressor.
+pub struct Xz {
+    level: u32,
+}
+
+impl Xz {
+    pub fn new(level: u32) -> Self {
+        Self { level }
+    }
+}
+
+impl Compressor for Xz {
+    fn id(&self) -> &'static str {
+        "xz"
+    }
+
+    fn compressed_len(&self, input: &[u8]) -> io::Result<usize> {
+        use xz2::write::XzEncoder;
+
+        let mut enc = XzEncoder::new(Vec::new(), self.level);
+        enc.write_all(input)?;
+        let out = enc.finish()?;
+        Ok(out.len())
+    }
+}
+
 impl Compressor for Gzip {
     fn id(&self) -> &'static str {
         "gzip"
@@ -61,6 +174,10 @@ impl Compressor for Gzip {
         let out = enc.finish()?;
         Ok(out.len())
     }
+}
+
+pub fn compressor_ids() -> &'static [&'static str] {
+    &["gzip", "zstd", "brotli", "lz4", "xz"]
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -86,13 +203,13 @@ impl Default for NcdOptions {
     }
 }
 
-pub fn ncd<C: Compressor>(c: &C, x: &[u8], y: &[u8], opts: NcdOptions) -> io::Result<f64> {
+pub fn ncd<C: Compressor + ?Sized>(c: &C, x: &[u8], y: &[u8], opts: NcdOptions) -> io::Result<f64> {
     let cx = c.compressed_len(x)? as f64;
     let cy = c.compressed_len(y)? as f64;
     ncd_from_sizes(c, x, y, cx, cy, opts)
 }
 
-fn ncd_from_sizes<C: Compressor>(
+fn ncd_from_sizes<C: Compressor + ?Sized>(
     c: &C,
     x: &[u8],
     y: &[u8],
@@ -136,7 +253,7 @@ fn ncd_from_sizes<C: Compressor>(
 /// Compute an NCD matrix between two sets of byte buffers.
 ///
 /// This function caches C(x) / C(y) so computing a matrix isn't O((n*m) * compress(x)).
-pub fn ncd_matrix<C: Compressor>(
+pub fn ncd_matrix<C: Compressor + ?Sized>(
     c: &C,
     a: &[Vec<u8>],
     b: &[Vec<u8>],
