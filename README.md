@@ -54,3 +54,8 @@ import * as native from "ncdprime/native";
 // native.ncd(...)
 // native.matrix(...)
 ```
+
+
+## Docs
+
+- Architecture: `docs/ARCHITECTURE.md`
