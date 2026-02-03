@@ -60,7 +60,7 @@ pub fn parse_compressor(
             return Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
                 format!("unknown compressor id: {id}"),
-            ))
+            ));
         }
     })
 }

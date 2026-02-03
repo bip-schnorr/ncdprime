@@ -25,8 +25,8 @@ pub fn format_matrix(
             out.push('\n');
         }
     } else {
-        for r in 0..rows.len() {
-            for (j, v) in values[r].iter().enumerate() {
+        for row in values.iter().take(rows.len()) {
+            for (j, v) in row.iter().enumerate() {
                 if j > 0 {
                     out.push(sep);
                 }
