@@ -1,5 +1,7 @@
 # ncdprime
 
+[![CI](https://github.com/bip-schnorr/ncdprime/actions/workflows/ci.yml/badge.svg)](https://github.com/bip-schnorr/ncdprime/actions/workflows/ci.yml)
+
 Modern NCD (Normalized Compression Distance).
 
 ## Install / build
