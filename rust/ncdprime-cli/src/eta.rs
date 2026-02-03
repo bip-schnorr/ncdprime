@@ -48,7 +48,12 @@ impl EtaEstimator {
             self.fit = None;
             return;
         }
-        let xs: Vec<f64> = self.samples.iter().take(n).map(|s| s.input_bytes as f64).collect();
+        let xs: Vec<f64> = self
+            .samples
+            .iter()
+            .take(n)
+            .map(|s| s.input_bytes as f64)
+            .collect();
         let ys: Vec<f64> = self
             .samples
             .iter()
@@ -83,7 +88,10 @@ impl EtaEstimator {
         Some(Duration::from_secs_f64(t))
     }
 
-    pub fn estimate_remaining<I: IntoIterator<Item = u64>>(&self, remaining: I) -> Option<Duration> {
+    pub fn estimate_remaining<I: IntoIterator<Item = u64>>(
+        &self,
+        remaining: I,
+    ) -> Option<Duration> {
         let mut total = 0.0;
         let mut any = false;
         let (a, b) = self.fit?;

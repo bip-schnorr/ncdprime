@@ -1,5 +1,5 @@
-mod inputs;
 mod eta;
+mod inputs;
 mod matrix;
 
 use clap::{Parser, Subcommand};
