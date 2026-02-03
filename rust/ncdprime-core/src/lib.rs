@@ -297,6 +297,84 @@ pub fn ncd_matrix<C: Compressor + ?Sized>(
     Ok(out)
 }
 
+/// Per-cell progress information for `ncd_matrix_with_progress`.
+#[derive(Clone, Copy, Debug)]
+pub struct NcdMatrixProgress {
+    pub done: usize,
+    pub total: usize,
+    /// Rough "work" proxy for estimation; currently `x.len() + y.len()`.
+    pub input_bytes: u64,
+    pub wall: std::time::Duration,
+}
+
+/// Compute an NCD matrix, invoking a callback after each computed cell.
+///
+/// Intended for CLIs to display progress + ETA.
+pub fn ncd_matrix_with_progress<C: Compressor + ?Sized, F>(
+    c: &C,
+    a: &[Vec<u8>],
+    b: &[Vec<u8>],
+    opts: NcdOptions,
+    mut on_cell: F,
+) -> io::Result<Vec<Vec<f64>>>
+where
+    F: FnMut(NcdMatrixProgress),
+{
+    // Keep the same caching behavior as `ncd_matrix`.
+    let mut size_cache: HashMap<[u8; 32], f64> = HashMap::new();
+
+    let mut a_sizes: Vec<f64> = Vec::with_capacity(a.len());
+    for x in a {
+        let key: [u8; 32] = *blake3::hash(x).as_bytes();
+        let cx = match size_cache.get(&key) {
+            Some(v) => *v,
+            None => {
+                let v = c.compressed_len(x)? as f64;
+                size_cache.insert(key, v);
+                v
+            }
+        };
+        a_sizes.push(cx);
+    }
+
+    let mut b_sizes: Vec<f64> = Vec::with_capacity(b.len());
+    for y in b {
+        let key: [u8; 32] = *blake3::hash(y).as_bytes();
+        let cy = match size_cache.get(&key) {
+            Some(v) => *v,
+            None => {
+                let v = c.compressed_len(y)? as f64;
+                size_cache.insert(key, v);
+                v
+            }
+        };
+        b_sizes.push(cy);
+    }
+
+    let total = a.len().saturating_mul(b.len());
+    let mut done = 0usize;
+
+    let mut out = vec![vec![0.0; b.len()]; a.len()];
+
+    for (i, x) in a.iter().enumerate() {
+        for (j, y) in b.iter().enumerate() {
+            let start = std::time::Instant::now();
+            out[i][j] = ncd_from_sizes(c, x, y, a_sizes[i], b_sizes[j], opts)?;
+            let wall = start.elapsed();
+
+            done = done.saturating_add(1);
+            on_cell(NcdMatrixProgress {
+                done,
+                total,
+                input_bytes: (x.len() + y.len()) as u64,
+                wall,
+            });
+        }
+    }
+
+    Ok(out)
+}
+
 pub fn read_all<R: Read>(mut r: R) -> io::Result<Vec<u8>> {
     let mut buf = Vec::new();
     r.read_to_end(&mut buf)?;

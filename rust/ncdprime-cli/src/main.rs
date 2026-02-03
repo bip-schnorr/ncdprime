@@ -145,11 +145,74 @@ fn main() -> anyhow::Result<()> {
             let a_bytes: Vec<Vec<u8>> = a.items.iter().map(|i| i.bytes.clone()).collect();
             let b_bytes: Vec<Vec<u8>> = b.items.iter().map(|i| i.bytes.clone()).collect();
 
-            let values = ncdprime_core::ncd_matrix(
+            let mut est = ncdprime_cli::eta::EtaEstimator::default();
+            let started = std::time::Instant::now();
+            let mut bytes_seen: u128 = 0;
+
+            let values = ncdprime_core::ncd_matrix_with_progress(
                 &*c,
                 &a_bytes,
                 &b_bytes,
                 ncdprime_core::NcdOptions::default(),
+                |p| {
+                    // Keep the estimator warm.
+                    est.add(ncdprime_cli::eta::Sample {
+                        input_bytes: p.input_bytes,
+                        wall: p.wall,
+                    });
+                    bytes_seen += p.input_bytes as u128;
+
+                    if est.should_refit() {
+                        est.refit_first_n(est.sample_count());
+                    }
+
+                    // Emit occasional progress updates to stderr (so matrix output stays clean).
+                    let should_print = p.done == 1
+                        || p.done == p.total
+                        || (p.done % 200 == 0)
+                        || est.should_refit();
+                    if !should_print {
+                        return;
+                    }
+
+                    let elapsed = started.elapsed();
+                    let pct = if p.total == 0 {
+                        100.0
+                    } else {
+                        (p.done as f64) * 100.0 / (p.total as f64)
+                    };
+
+                    let remaining_cells = p.total.saturating_sub(p.done);
+                    let avg_bytes = if p.done == 0 {
+                        0u64
+                    } else {
+                        (bytes_seen / (p.done as u128)) as u64
+                    };
+                    let eta = est
+                        .estimate_remaining(std::iter::repeat(avg_bytes).take(remaining_cells));
+
+                    fn fmt_dur(d: std::time::Duration) -> String {
+                        let s = d.as_secs();
+                        let h = s / 3600;
+                        let m = (s % 3600) / 60;
+                        let ss = s % 60;
+                        if h > 0 {
+                            format!("{h}:{m:02}:{ss:02}")
+                        } else {
+                            format!("{m}:{ss:02}")
+                        }
+                    }
+
+                    let eta_str = eta.map(fmt_dur).unwrap_or_else(|| "?".to_string());
+                    eprintln!(
+                        "matrix: {}/{} ({pct:.1}%) elapsed={} eta={} (samples={})",
+                        p.done,
+                        p.total,
+                        fmt_dur(elapsed),
+                        eta_str,
+                        est.sample_count(),
+                    );
+                },
             )?;
             let (rows, cols) = matrix::rows_cols(&a, &b);
             let out = matrix::format_matrix(
