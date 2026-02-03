@@ -61,3 +61,8 @@ import * as native from "ncdprime/native";
 ## Docs
 
 - Architecture: `docs/ARCHITECTURE.md`
+
+
+## Getting started
+
+- `docs/GETTING_STARTED.md`
