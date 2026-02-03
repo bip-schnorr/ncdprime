@@ -52,8 +52,10 @@ fn matrix_singleton_cache_dedups_across_a_and_b_sym_none() {
     let a = vec![b"aaa".to_vec(), b"bbb".to_vec(), b"aaa".to_vec()];
     let b = vec![b"aaa".to_vec(), b"aaa".to_vec()];
 
-    let mut opts = NcdOptions::default();
-    opts.symmetry = Symmetry::None;
+    let opts = NcdOptions {
+        symmetry: Symmetry::None,
+        ..Default::default()
+    };
 
     let _m = ncd_matrix(&c, &a, &b, opts).unwrap();
 
