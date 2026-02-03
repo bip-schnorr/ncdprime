@@ -15,7 +15,14 @@ export const gzipCompressor = (level = 9): Compressor => ({
   name: `gzip (zlib, level=${level})`,
   compress(input) {
     // Deterministic gzip output (header mtime fixed to 0).
-    return gzipSync(input, { level, mtime: 0 } as unknown as ZlibOptions);
+    // We also pin zlib parameters to their maximums for consistency:
+    // - windowBits=15 (32 KiB, max for DEFLATE)
+    // - memLevel=9 (max)
+    // Note: @types/node may not expose these for gzip options, but Node supports them.
+    return gzipSync(
+      input,
+      { level, mtime: 0, windowBits: 15, memLevel: 9 } as unknown as ZlibOptions,
+    );
   },
 });
 
