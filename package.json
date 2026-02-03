@@ -24,5 +24,13 @@
     "test": "vitest run",
     "build:native": "bash -lc \"source $HOME/.cargo/env && napi build --manifest-path rust/ncdprime-node/Cargo.toml --release --output-dir npm\"",
     "test:native": "node -e \"import('./index.js').then(m=>console.log(m.ncd(Buffer.from('aaaa'), Buffer.from('aaaa'),6)))\""
+  },
+  "dependencies": {
+    "commander": "^12.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.30",
+    "typescript": "^5.5.4",
+    "vitest": "^2.0.5"
   }
 }
