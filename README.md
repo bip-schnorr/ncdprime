@@ -1,25 +1,56 @@
 # ncdprime
 
-Modern CLI UX proposal + skeleton repo for an NCD utility.
+Modern NCD (Normalized Compression Distance).
 
-## Goals
-- Generate deterministic directory “matrices” (square/rectangle modes)
-- Run an NCD computation pipeline over generated instances
-- Provide compressor plugins (built-in + third-party via entry points)
-- Reproducible runs via config file + lockfile-style resolved config
+## Install / build
 
-## Install (dev)
 ```bash
-python -m venv .venv && source .venv/bin/activate
-pip install -e '.[dev]'
+npm install
+npm run build
 ```
 
-## CLI (planned)
+## CLI
+
+Build the TypeScript CLI and run:
+
 ```bash
-ncd --help
-ncd gen matrix --help
-ncd run --help
-ncd compressors list
+npm run build
+node dist/cli.js pair <fileA> <fileB> --gzip-level 9
+node dist/cli.js matrix <setA> [setB] --format tsv
 ```
 
-See `docs/cli.md` (to be added) for the full UX spec.
+Notes:
+- gzip output is deterministic by default (fixed gzip header fields)
+- default gzip level is 9
+- the CLI will use the native Rust backend when available, otherwise it falls back to a pure-JS implementation
+
+## Library
+
+Default import is pure-JS (and will automatically use native if available):
+
+```js
+import { ncdAuto, matrixAuto } from "ncdprime";
+
+const enc = (s) => new TextEncoder().encode(s);
+
+console.log(ncdAuto(enc("aaaa"), enc("aaaa"), { gzipLevel: 9 }));
+console.log(await matrixAuto([enc("aaa"), enc("bbb")], [enc("aaa")], { gzipLevel: 9 }));
+```
+
+## Native backend (optional)
+
+To build the Rust-powered Node backend:
+
+```bash
+npm run build:native
+```
+
+Then the CLI and `ncdAuto`/`matrixAuto` will prefer it automatically.
+
+If you want to import the native bindings directly (and accept that it may not exist unless built), use:
+
+```js
+import * as native from "ncdprime/native";
+// native.ncd(...)
+// native.matrix(...)
+```
