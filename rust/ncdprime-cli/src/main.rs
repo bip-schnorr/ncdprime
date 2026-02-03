@@ -188,8 +188,8 @@ fn main() -> anyhow::Result<()> {
                     } else {
                         (bytes_seen / (p.done as u128)) as u64
                     };
-                    let eta = est
-                        .estimate_remaining(std::iter::repeat(avg_bytes).take(remaining_cells));
+                    let eta =
+                        est.estimate_remaining(std::iter::repeat(avg_bytes).take(remaining_cells));
 
                     fn fmt_dur(d: std::time::Duration) -> String {
                         let s = d.as_secs();
