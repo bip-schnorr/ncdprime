@@ -1,4 +1,3 @@
-mod eta;
 mod inputs;
 mod matrix;
 
