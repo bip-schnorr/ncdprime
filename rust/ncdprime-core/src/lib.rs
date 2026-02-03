@@ -71,7 +71,7 @@ impl Compressor for Zstd {
     fn compressed_len(&self, input: &[u8]) -> io::Result<usize> {
         zstd::stream::encode_all(input, self.level)
             .map(|v| v.len())
-            .map_err(|e| io::Error::new(io::ErrorKind::Other, e))
+            .map_err(io::Error::other)
     }
 }
 
@@ -104,7 +104,7 @@ impl Compressor for Brotli {
         };
 
         brotli::BrotliCompress(&mut &input[..], &mut out, &params)
-            .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("brotli: {e:?}")))?;
+            .map_err(|e| io::Error::other(format!("brotli: {e:?}")))?;
 
         Ok(out.len())
     }
@@ -239,12 +239,7 @@ fn ncd_from_sizes<C: Compressor + ?Sized>(
     }
 
     if opts.clamp_0_1 {
-        if d < 0.0 {
-            d = 0.0;
-        }
-        if d > 1.0 {
-            d = 1.0;
-        }
+        d = d.clamp(0.0, 1.0);
     }
 
     Ok(d)
