@@ -1,6 +1,6 @@
 mod factory;
 
-pub use factory::{parse_compressor, CompressorSpec};
+pub use factory::{CompressorSpec, parse_compressor};
 
 use std::collections::HashMap;
 use std::io::{self, Read, Write};
