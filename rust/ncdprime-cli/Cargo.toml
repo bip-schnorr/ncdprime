@@ -9,3 +9,7 @@ clap = { version = "4", features = ["derive"] }
 ncdprime-core = { path = "../ncdprime-core" }
 
 # For matrix subcommand set-loading + output formatting
+
+[lib]
+name = "ncdprime_cli"
+path = "src/lib.rs"
