@@ -1,14 +1,20 @@
-__pycache__/
-*.py[cod]
-
-.venv/
-venv/
-
-.pytest_cache/
-.mypy_cache/
-.ruff_cache/
-
-# build artifacts
-*.egg-info/
+node_modules/
 dist/
-build/
+.DS_Store
+*.log
+
+# Rust
+**/target/
+**/*.rs.bk
+# Keep the workspace lockfile (rust/Cargo.lock) committed for reproducible CLI builds.
+Cargo.lock
+!rust/Cargo.lock
+
+# Native artifacts
+npm/
+*.node
+
+# Python
+__pycache__/
+*.pyc
+.venv/

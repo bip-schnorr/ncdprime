@@ -1,0 +1,14 @@
+[package]
+name = "ncdprime-core"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+flate2 = { version = "1", default-features = true }
+blake3 = "1"
+
+# Modern compressors
+zstd = "0.13"
+brotli = "7"
+lz4_flex = "0.11"
+xz2 = "0.1"
