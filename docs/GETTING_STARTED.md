@@ -36,6 +36,24 @@ Build the Rust CLI:
 ```bash
 cargo build -p ncdprime-cli
 ./target/debug/ncdprime-cli --help
+
+List available compressors:
+
+```bash
+./target/debug/ncdprime-cli compressors
+```
+
+Run a pairwise NCD (choose compressor + parameters):
+
+```bash
+./target/debug/ncdprime-cli pair a.txt b.txt --compressor zstd --zstd-level 3
+```
+
+Compute a matrix (progress/ETA prints to stderr; TSV/CSV on stdout):
+
+```bash
+./target/debug/ncdprime-cli matrix ./dirA ./dirB --format tsv > out.tsv
+```
 ```
 
 ### 3) Python package
